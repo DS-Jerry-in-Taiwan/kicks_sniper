@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant Main as main()
+    participant Fetch as fetch_listings_playwright()
+    participant Playwright as Playwright
+    participant Browser as Chromium
+    participant Utils as utils/schema.py
+    participant FS as FileSystem
+
+    Main->>Fetch: 呼叫 fetch_listings_playwright()
+    Fetch->>Playwright: 啟動 async_playwright
+    Playwright->>Browser: 啟動 Chromium (headless)
+    Fetch->>Browser: 建立 context 並設定 User-Agent
+    Fetch->>Browser: 開啟新頁面並前往 8891 列表頁
+    Fetch->>Browser: 等待車輛清單元素出現
+    Fetch->>Browser: 截圖保存 (debug_8891.png)
+    Browser-->>Fetch: 回傳渲染後 HTML
+    Fetch->>Fetch: 用 CSS 選擇器解析車輛資料
+    Fetch->>Utils: 資料欄位驗證與清洗
+    Fetch-->>Main: 回傳車輛列表
+    Main->>FS: 寫入 kicks_list.json
+    Main->>Main: 檢查資料筆數與內容
+    Main-->>Main: 回報成功或失敗
