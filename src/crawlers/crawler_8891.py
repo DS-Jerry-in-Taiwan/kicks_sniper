@@ -3,6 +3,7 @@ import json
 import re
 import logging
 import sys
+import random
 from datetime import datetime
 from pathlib import Path
 from playwright.async_api import async_playwright
@@ -53,6 +54,27 @@ def clean_mileage(mileage_str):
         logging.warning(f"Mileage parsing error: {mileage_str} -> {e}")
         return 0
 
+async def handle_popup(locator):
+    logging.info("🛡️ 偵測到定位彈窗，嘗試關閉...")
+    try:
+        # 優先點擊關閉鈕或拒絕鈕
+        close_btn = locator.page.locator(".positionAuthModal_position-auth-modal-close__PsSRY, .tracking-virtual-reject-auth-modal-button")
+        if await close_btn.is_visible():
+            await close_btn.click()
+            logging.info("🛡️ 已點擊 close/reject 關閉彈窗")
+            return
+        # 再嘗試點擊 mask
+        mask = locator.page.locator(".positionAuthModal_position-auth-modal-mask__34NyF")
+        if await mask.is_visible():
+            await mask.click()
+            logging.info("🛡️ 已點擊 mask 關閉彈窗")
+            return
+        # 最後模擬 ESC
+        await locator.page.keyboard.press("Escape")
+        logging.info("🛡️ 已按 ESC 關閉彈窗")
+    except Exception as e:
+        logging.warning(f"⚠️ 關閉彈窗失敗: {e}")
+
 async def fetch_listings_playwright(url="https://auto.8891.com.tw/nissan/kicks"):
     car_list = []
     page_num = 1
@@ -68,24 +90,9 @@ async def fetch_listings_playwright(url="https://auto.8891.com.tw/nissan/kicks")
         try:
             await page.goto(url, wait_until="domcontentloaded", timeout=30000)
             await page.wait_for_selector(".car-item, .carList, [class*='car'], [class*='Card']", timeout=15000)
+            await page.add_locator_handler(page.locator(".positionAuthModal"), handle_popup)
             await page.wait_for_timeout(3000)
             while True:
-                # 嘗試自動關閉位置權限彈窗
-                try:
-                    await page.evaluate("""
-                        () => {
-                            const mask = document.querySelector('.positionAuthModal_position-auth-modal-mask__34NyF');
-                            if (mask) mask.click();
-                        }
-                    """)
-                except Exception as e:
-                    logging.info(f"未發現或無法自動關閉位置權限彈窗: {e}")
-                # 模擬 ESC 關閉彈窗
-                try:
-                    await page.keyboard.press("Escape")
-                except Exception as e:
-                    logging.info(f"模擬 ESC 關閉彈窗失敗: {e}")
-
                 logging.info(f"=== 處理第 {page_num} 頁 ===")
                 car_items = await page.query_selector_all('div#items-box a.listItem_row-item__kj_nW.row-item')
                 logging.info(f"找到 {len(car_items)} 個車輛項目")
@@ -155,24 +162,23 @@ async def fetch_listings_playwright(url="https://auto.8891.com.tw/nissan/kicks")
                     logging.info("未找到下一頁按鈕，結束分頁。")
                     break
 
-                # 再次嘗試關閉彈窗，避免點擊被遮擋
+                # 分頁前優先嘗試關閉彈窗
                 try:
                     await page.evaluate("""
                         () => {
+                            const closeBtn = document.querySelector('.positionAuthModal_position-auth-modal-close__PsSRY') || document.querySelector('.tracking-virtual-reject-auth-modal-button');
+                            if (closeBtn) closeBtn.click();
                             const mask = document.querySelector('.positionAuthModal_position-auth-modal-mask__34NyF');
                             if (mask) mask.click();
                         }
                     """)
-                except Exception as e:
-                    logging.info(f"分頁前未發現或無法自動關閉位置權限彈窗: {e}")
-                try:
                     await page.keyboard.press("Escape")
                 except Exception as e:
-                    logging.info(f"分頁前模擬 ESC 關閉彈窗失敗: {e}")
+                    logging.info(f"分頁前自動關閉彈窗失敗: {e}")
 
                 await next_btn.click()
                 page_num += 1
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(random.randint(2000, 5000))
                 await page.wait_for_selector('div#items-box a.listItem_row-item__kj_nW.row-item', timeout=10000)
         except Exception as e:
             logging.error(f"抓取過程發生錯誤: {e}")
