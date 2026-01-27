@@ -28,8 +28,15 @@ class DatabaseManager:
         self.conn.executescript(schema_sql)
 
     def save_cars(self, cars: List[Dict[str, Any]]):
+        new_cars = []
+        updated_cars = []
         for car in cars:
-            self.upsert_car(car)
+            result = self.upsert_car(car)
+            if result == "new":
+                new_cars.append(car)
+            elif result == "updated":
+                updated_cars.append(car)
+        return new_cars, updated_cars
 
     def upsert_car(self, car: Dict[str, Any]):
         cur = self.conn.cursor()
@@ -54,6 +61,7 @@ class DatabaseManager:
                 "INSERT INTO price_history (car_id, price) VALUES (?, ?)",
                 (car_id, price)
             )
+            return "new"
         else:
             old_price = row["price"]
             if old_price != price:
@@ -66,9 +74,11 @@ class DatabaseManager:
                     "INSERT INTO price_history (car_id, price) VALUES (?, ?)",
                     (car_id, price)
                 )
+                return "updated"
             else:
                 # 價格未變，只更新 updated_at
                 cur.execute(
                     "UPDATE cars SET updated_at=CURRENT_TIMESTAMP WHERE id=?",
                     (car_id,)
                 )
+                return None
