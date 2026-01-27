@@ -10,4 +10,4 @@ logs/
 # VSCode
 .vscode/
 # Playwright browser cache
-.playwright/
+.playwright/docs/agent_context/
