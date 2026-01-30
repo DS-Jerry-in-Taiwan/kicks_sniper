@@ -9,7 +9,7 @@ def run_crawler():
 
 def run_push():
     # 執行主流程（解析 kicks_list.json、推播、資料庫更新）
-    result = subprocess.run([sys.executable, "src/main.py"], check=False)
+    result = subprocess.run([sys.executable, "src/etl.py"], check=False)
     sys.exit(result.returncode)
 
 def main():

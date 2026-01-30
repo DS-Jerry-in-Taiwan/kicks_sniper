@@ -29,9 +29,9 @@ jobs:
           poetry install --no-interaction --no-root
           poetry run python -m playwright install --with-deps
 
-      - name: Run main.py
+      - name: Run pipeline (etl)
         run: |
-          poetry run python src/main.py
+          poetry run python src/etl.py
 
       - name: Commit kicks.db changes
         run: |
