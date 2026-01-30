@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS cars (
     source TEXT NOT NULL,
     title TEXT NOT NULL,
     year INTEGER NOT NULL,
-    price INTEGER NOT NULL,
+    price REAL NOT NULL,
     mileage INTEGER NOT NULL,
     location TEXT,
     url TEXT,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS cars (
 CREATE TABLE IF NOT EXISTS price_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     car_id TEXT NOT NULL,             -- 對應 cars.id
-    price INTEGER NOT NULL,
+    price REAL NOT NULL,
     recorded_at TEXT DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(car_id) REFERENCES cars(id)
 );

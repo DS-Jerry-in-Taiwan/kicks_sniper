@@ -22,21 +22,35 @@ logging.basicConfig(
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
+from src.utils.price_config import SPECIAL_PRICE_STRINGS
+
 def clean_price(price_str):
     try:
         if not price_str:
-            return 0
-        price_str = str(price_str).replace(",", "").strip()
-        match = re.search(r"([\d\.]+)\s*萬", price_str)
+            logging.info(f"Price parse: 空字串，回傳空")
+            return ""
+        # 去除所有空白、換行、全形空白
+        price_str = str(price_str).replace(",", "").replace("", "").replace("\n", "").replace("\r", "").replace(" ", "").strip()
+        # 若為特殊字串直接回傳
+        if price_str in SPECIAL_PRICE_STRINGS:
+            logging.info(f"Price parse: 特殊字串「{price_str}」，直接回傳")
+            return price_str
+        match = re.search(r"([\d\.]+)萬", price_str, re.DOTALL)
         if match:
-            return int(float(match.group(1)) * 10000)
-        match = re.search(r"([\d,]+)", price_str)
+            val = float(match.group(1))
+            logging.info(f"Price parse: 正常解析「{price_str}」=> {val} (單位:萬)")
+            return val
+        match = re.search(r"([\d\.]+)", price_str)
         if match:
-            return int(match.group(1).replace(",", ""))
-        return int(float(price_str))
+            val = float(match.group(1))
+            logging.info(f"Price parse: 正常解析「{price_str}」=> {val} (單位:萬)")
+            return val
+        val = float(price_str)
+        logging.info(f"Price parse: 正常解析「{price_str}」=> {val} (單位:萬)")
+        return val
     except Exception as e:
         logging.warning(f"Price parsing error: {price_str} -> {e}")
-        return 0
+        return price_str
 
 def clean_mileage(mileage_str):
     try:
@@ -203,7 +217,8 @@ async def main():
     if cars:
         logging.info("資料摘要:")
         logging.info(f"- 總筆數: {len(cars)}")
-        logging.info(f"- 有效價格數: {sum(1 for c in cars if c['price'] > 0)}")
+        valid_price_count = sum(1 for c in cars if isinstance(c["price"], (int, float)) and c["price"] > 0)
+        logging.info(f"- 有效價格數: {valid_price_count}")
         logging.info(f"- 有效里程數: {sum(1 for c in cars if c['mileage'] > 0)}")
     else:
         logging.warning("⚠️ 未抓取到任何資料，請檢查截圖 logs/debug_8891.png 進行除錯")

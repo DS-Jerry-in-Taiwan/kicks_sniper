@@ -1,0 +1,38 @@
+name: Kicks Sniper Daily Patrol
+
+on:
+  schedule:
+    - cron: '0 2,10 * * *'  # 台灣時間 10:00 & 18:00
+  workflow_dispatch:
+
+jobs:
+  patrol:
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Playwright
+        run: |
+          pip install -r requirements.txt
+          python -m playwright install --with-deps
+
+      - name: Run main.py
+        run: |
+          python src/main.py
+
+      - name: Commit kicks.db changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/kicks.db
+          git commit -m "chore: update kicks.db [auto]" || echo "No changes to commit"
+          git push
