@@ -7,7 +7,7 @@ on:
 
 jobs:
   patrol:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted]
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
