@@ -1,7 +1,8 @@
 venv/
 __pycache__/
 .env
-data/
+# data/ 目錄需納入版本控（僅目錄，不含資料）
+# data/
 logs/
 *.log
 docs/agent_context/
