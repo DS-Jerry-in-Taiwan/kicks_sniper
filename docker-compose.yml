@@ -11,8 +11,7 @@ services:
 
   kicks-sniper-etl:
     image: kicks-sniper:${IMAGE_TAG:-latest}
-    env_file:
-      - .env
+    # env_file: - .env  # 已移除，改用 entrypoint 兼容機制
     # 若 .env 不存在也不報錯
     entrypoint: /bin/sh -c "if [ -f .env ]; then export $(grep -v '^#' .env | xargs); fi; exec \"$@\""
     volumes:
@@ -22,8 +21,7 @@ services:
 
   kicks-sniper-crawler:
     image: kicks-sniper:${IMAGE_TAG:-latest}
-    env_file:
-      - .env
+    # env_file: - .env  # 已移除，改用 entrypoint 兼容機制
     volumes:
       - ./data:/app/data
     command: run.py --mode crawl
@@ -31,8 +29,7 @@ services:
 
   kicks-sniper-all:
     image: kicks-sniper:${IMAGE_TAG:-latest}
-    env_file:
-      - .env
+    # env_file: - .env  # 已移除，改用 entrypoint 兼容機制
     volumes:
       - ./data:/app/data
     command: run.py --mode all  # 一鍵依序執行所有流程
