@@ -11,6 +11,9 @@ services:
 
   kicks-sniper-etl:
     image: kicks-sniper:${IMAGE_TAG:-latest}
+    environment:
+      - TELEGRAM_TOKEN
+      - TELEGRAM_CHAT_ID
     env_file:
       - .env
     volumes:
@@ -29,6 +32,9 @@ services:
 
   kicks-sniper-all:
     image: kicks-sniper:${IMAGE_TAG:-latest}
+    environment:
+      - TELEGRAM_TOKEN
+      - TELEGRAM_CHAT_ID
     env_file:
       - .env
     volumes:
