@@ -9,6 +9,10 @@ on:
         description: "Docker image tag to use"
         required: true
         default: '0.0.2'
+    mode:
+        description: "Which step to run: crawler / etl / all"
+        required: true
+        default: 'all'
 
 jobs:
   patrol:
@@ -31,12 +35,15 @@ jobs:
           fi
 
       - name: Run crawler
+        if: ${{ github.event.inputs.mode == 'crawler' || github.event.inputs.mode == 'all' }}
         run: |
           docker compose --rm kicks-sniper-crawler
       - name: Run etl
+        if: ${{ github.event.inputs.mode == 'etl' || github.event.inputs.mode == 'all' }}
         run: |
           docker compose --rm kicks-sniper-etl
       - name: Run all-in-one
+        if: ${{ github.event.inputs.mode == 'all' }}
         run: |
           docker compose --rm kicks-sniper-all
       - name: Clean up unused Docker container
