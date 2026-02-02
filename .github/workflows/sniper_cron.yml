@@ -9,10 +9,10 @@ on:
         description: "Docker image tag to use"
         required: true
         default: '0.0.2'
-    mode:
-        description: "Which step to run: crawler / etl / all"
-        required: true
-        default: 'all'
+      mode:
+          description: "Which step to run: crawler / etl / all"
+          required: true
+          default: 'all'
 
 jobs:
   patrol:
