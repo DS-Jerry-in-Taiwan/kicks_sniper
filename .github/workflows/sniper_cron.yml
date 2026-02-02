@@ -15,6 +15,10 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Run crawler
+        run: |
+          poetry run python src/crawlers/crawler_8891.py
+
       - name: Run pipeline (etl)
         run: |
           poetry run python src/etl.py
