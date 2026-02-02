@@ -16,23 +16,25 @@ services:
     entrypoint: /bin/sh -c "if [ -f .env ]; then export $(grep -v '^#' .env | xargs); fi; exec \"$@\""
     volumes:
       - ./data:/app/data
-    command: run.py --mode push
+    command: poetry run python run.py --mode push
     restart: unless-stopped
 
   kicks-sniper-crawler:
     image: kicks-sniper:${IMAGE_TAG:-latest}
     # env_file: - .env  # 已移除，改用 entrypoint 兼容機制
+    entrypoint: /bin/sh -c "if [ -f .env ]; then export $(grep -v '^#' .env | xargs); fi; exec \"$@\""
     volumes:
       - ./data:/app/data
-    command: run.py --mode crawl
+    command: poetry run python run.py --mode crawl
     restart: unless-stopped
 
   kicks-sniper-all:
     image: kicks-sniper:${IMAGE_TAG:-latest}
     # env_file: - .env  # 已移除，改用 entrypoint 兼容機制
+    entrypoint: /bin/sh -c "if [ -f .env ]; then export $(grep -v '^#' .env | xargs); fi; exec \"$@\""
     volumes:
       - ./data:/app/data
-    command: run.py --mode all  # 一鍵依序執行所有流程
+    command: poetry run python run.py --mode all  # 一鍵依序執行所有流程
     restart: unless-stopped
 
 # build 指令：docker compose build kicks-sniper-build
