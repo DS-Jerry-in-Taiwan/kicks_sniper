@@ -13,6 +13,8 @@ services:
     image: kicks-sniper:${IMAGE_TAG:-latest}
     env_file:
       - .env
+    # 若 .env 不存在也不報錯
+    entrypoint: /bin/sh -c "if [ -f .env ]; then export $(grep -v '^#' .env | xargs); fi; exec \"$@\""
     volumes:
       - ./data:/app/data
     command: run.py --mode push
