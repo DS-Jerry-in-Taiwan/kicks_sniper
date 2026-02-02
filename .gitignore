@@ -4,6 +4,8 @@ __pycache__/
 # data/ 目錄需納入版本控（僅目錄，不含資料）
 data/*
 !data/.gitkeep
+!data/raw/
+!data/raw/.gitkeep
 logs/
 *.log
 docs/agent_context/
