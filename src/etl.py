@@ -47,3 +47,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print("流程執行結束，容器即將關閉。")
+    import sys
+    sys.exit(0)

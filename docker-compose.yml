@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  kicks-sniper-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        IMAGE_TAG: ${IMAGE_TAG:-latest}
+    image: kicks-sniper:${IMAGE_TAG:-latest}
+    # 不啟動任何流程，僅用於 build 鏡像
+
+  kicks-sniper-etl:
+    image: kicks-sniper:${IMAGE_TAG:-latest}
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: run.py --mode push
+    restart: unless-stopped
+
+  kicks-sniper-crawler:
+    image: kicks-sniper:${IMAGE_TAG:-latest}
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: run.py --mode crawl
+    restart: unless-stopped
+
+  kicks-sniper-all:
+    image: kicks-sniper:${IMAGE_TAG:-latest}
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    command: run.py --mode all  # 一鍵依序執行所有流程
+    restart: unless-stopped
+
+# build 指令：docker compose build kicks-sniper-build
+# 其他 service 共用 kicks-sniper:${IMAGE_TAG} 鏡像

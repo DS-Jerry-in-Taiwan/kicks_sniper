@@ -1,0 +1,33 @@
+name: Kicks Sniper Daily Patrol
+
+on:
+  schedule:
+    - cron: '0 2,10 * * *'  # 台灣時間 10:00 & 18:00
+  workflow_dispatch:
+
+jobs:
+  patrol:
+    runs-on: [self-hosted]
+    container:
+      image: python:3.12-slim
+    env:
+      TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up dependencies
+        run: |
+          pip install --upgrade pip
+          pip install poetry
+          poetry install --no-interaction --no-root
+          poetry run python -m playwright install --with-deps
+
+      - name: Run crawler
+        run: |
+          poetry run python src/crawlers/crawler_8891.py
+
+      - name: Run pipeline (etl)
+        run: |
+          poetry run python src/etl.py
