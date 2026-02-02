@@ -15,20 +15,6 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install Poetry
-        run: |
-          pipx install poetry
-
-      - name: Install dependencies (Poetry)
-        run: |
-          poetry install --no-interaction --no-root
-          poetry run python -m playwright install --with-deps
-
       - name: Run pipeline (etl)
         run: |
           poetry run python src/etl.py
