@@ -33,6 +33,9 @@ jobs:
           else
             echo "found kicks-sniper:${IMAGE_TAG}, skip build."
           fi
+      - name: Create a empty .env file
+        run: |
+          touch .env
 
       - name: Run crawler
         if: ${{ github.event.inputs.mode == 'crawler' || github.event.inputs.mode == 'all' }}
