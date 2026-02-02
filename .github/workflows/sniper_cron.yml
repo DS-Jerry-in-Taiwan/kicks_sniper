@@ -4,30 +4,41 @@ on:
   schedule:
     - cron: '0 2,10 * * *'  # 台灣時間 10:00 & 18:00
   workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Docker image tag to use"
+        required: true
+        default: '0.0.2'
 
 jobs:
   patrol:
     runs-on: [self-hosted]
-    container:
-      image: python:3.12-slim
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      IMAGE_TAG: ${{ github.event.inputs.image_tag }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set up dependencies
+      - name: Build kicks-sniper Docker Image
         run: |
-          pip install --upgrade pip
-          pip install poetry
-          poetry install --no-interaction --no-root
-          poetry run python -m playwright install --with-deps
+          if ! docker images --format "{{.Repository}}:{{.Tag}}" | grep "kicks-sniper:${IMAGE_TAG}" > /dev/null; then
+            echo "not found kicks-sniper:${IMAGE_TAG}, building..."
+            docker build --build-arg IMAGE_TAG=${IMAGE_TAG} -t kicks-sniper:${IMAGE_TAG} .
+          else
+            echo "found kicks-sniper:${IMAGE_TAG}, skip build."
+          fi
 
       - name: Run crawler
         run: |
-          poetry run python src/crawlers/crawler_8891.py
-
-      - name: Run pipeline (etl)
+          docker compose --rm kicks-sniper-crawler
+      - name: Run etl
         run: |
-          poetry run python src/etl.py
+          docker compose --rm kicks-sniper-etl
+      - name: Run all-in-one
+        run: |
+          docker compose --rm kicks-sniper-all
+      - name: Clean up unused Docker container
+        run: |
+          docker compose down
