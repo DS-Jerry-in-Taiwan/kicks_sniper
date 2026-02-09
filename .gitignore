@@ -16,3 +16,5 @@ docs/agent_context/
 .vscode/
 # Playwright browser cache
 .playwright/docs/agent_context/
+# history/
+.history/

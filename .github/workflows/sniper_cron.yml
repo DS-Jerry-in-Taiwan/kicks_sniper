@@ -41,14 +41,17 @@ jobs:
         if: ${{ github.event.inputs.mode == 'crawler' || github.event.inputs.mode == 'all' }}
         run: |
           docker compose run --rm kicks-sniper-crawler
+      
       - name: Run push
         if: ${{ github.event.inputs.mode == 'push' || github.event.inputs.mode == 'all' }}
         run: |
           docker compose run --rm kicks-sniper-etl
+        
       - name: Run all-in-one
         if: ${{ github.event.inputs.mode == 'all' }}
         run: |
           docker compose run --rm kicks-sniper-all
+      
       - name: Clean up unused Docker container
         run: |
           docker compose down
